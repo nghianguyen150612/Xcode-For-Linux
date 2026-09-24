@@ -40,11 +40,11 @@ fi
 
 # Verify version of resolved Xcode
 XCODE_VER=$(defaults read "${RESOLVED_XCODE}/Contents/Info.plist" CFBundleShortVersionString 2>/dev/null || true)
-XCODE_BUILD=$(defaults read "${RESOLVED_XCODE}/Contents/Info.plist" DTXcodeBuild 2>/dev/null || true)
+XCODE_BUILD=$(DEVELOPER_DIR="${RESOLVED_XCODE}/Contents/Developer" xcodebuild -version 2>/dev/null \
+    | awk '/^Build version / { print $3; exit }')
 
 if [[ -z "${XCODE_BUILD}" ]]; then
-    XCODE_BUILD=$(DEVELOPER_DIR="${RESOLVED_XCODE}/Contents/Developer" xcodebuild -version 2>/dev/null \
-        | awk '/^Build version / { print $3; exit }')
+    XCODE_BUILD=$(defaults read "${RESOLVED_XCODE}/Contents/Info.plist" DTXcodeBuild 2>/dev/null || true)
 fi
 
 echo "Resolved Xcode Path:  ${RESOLVED_XCODE}"
