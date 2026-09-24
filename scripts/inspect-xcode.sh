@@ -185,7 +185,7 @@ for root, dirs, files in os.walk(xcode_path):
             # Universal Mach-O descriptions can span multiple lines. Keep TSV records
             # one-line and tab-safe while preserving the full observable description.
             file_out = " | ".join(
-                line.strip().replace("\\t", " ")
+                line.strip().expandtabs(1)
                 for line in raw_file_out.splitlines()
                 if line.strip()
             )
