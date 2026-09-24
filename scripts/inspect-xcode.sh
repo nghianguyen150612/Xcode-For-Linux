@@ -24,7 +24,7 @@ else
             if [[ -f "${app}/Contents/Info.plist" ]]; then
                 ver=$(defaults read "${app}/Contents/Info.plist" CFBundleShortVersionString 2>/dev/null || true)
             fi
-            if [[ "${ver}" == "16.4"* ]]; then
+            if [[ "${ver}" == "16.4" ]]; then
                 RESOLVED_XCODE="${app}"
                 echo "Found Xcode 16.4 candidate: ${RESOLVED_XCODE}"
                 break
@@ -39,15 +39,25 @@ if [[ -z "${RESOLVED_XCODE}" || ! -d "${RESOLVED_XCODE}" ]]; then
 fi
 
 # Verify version of resolved Xcode
-XCODE_VER=$(defaults read "${RESOLVED_XCODE}/Contents/Info.plist" CFBundleShortVersionString 2>/dev/null || echo "Unknown")
-XCODE_BUILD=$(defaults read "${RESOLVED_XCODE}/Contents/Info.plist" ProductBuildVersion 2>/dev/null || echo "Unknown")
+XCODE_VER=$(defaults read "${RESOLVED_XCODE}/Contents/Info.plist" CFBundleShortVersionString 2>/dev/null || true)
+XCODE_BUILD=$(defaults read "${RESOLVED_XCODE}/Contents/Info.plist" DTXcodeBuild 2>/dev/null || true)
+
+if [[ -z "${XCODE_BUILD}" ]]; then
+    XCODE_BUILD=$(DEVELOPER_DIR="${RESOLVED_XCODE}/Contents/Developer" xcodebuild -version 2>/dev/null \
+        | awk '/^Build version / { print $3; exit }')
+fi
 
 echo "Resolved Xcode Path:  ${RESOLVED_XCODE}"
-echo "Xcode Version:        ${XCODE_VER}"
-echo "Xcode Build:          ${XCODE_BUILD}"
+echo "Xcode Version:        ${XCODE_VER:-Unknown}"
+echo "Xcode Build:          ${XCODE_BUILD:-Unknown}"
 
-if [[ "${XCODE_VER}" != "16.4"* ]]; then
-    echo "ERROR: Located Xcode version is '${XCODE_VER}', expected 16.4.x" >&2
+if [[ "${XCODE_VER}" != "16.4" ]]; then
+    echo "ERROR: Located Xcode version is '${XCODE_VER:-Unknown}', expected exactly 16.4" >&2
+    exit 1
+fi
+
+if [[ -z "${XCODE_BUILD}" ]]; then
+    echo "ERROR: Could not determine the Xcode build number." >&2
     exit 1
 fi
 
@@ -70,12 +80,12 @@ if [[ ! -f "${XCODE_MAIN}" ]]; then
 fi
 
 echo "=== Inspecting Main Executable ==="
-file "${XCODE_MAIN}" > "${XCODE_MAIN_DIR}/file.txt" 2>&1 || true
-lipo -archs "${XCODE_MAIN}" > "${XCODE_MAIN_DIR}/lipo.txt" 2>&1 || true
-otool -L "${XCODE_MAIN}" > "${XCODE_MAIN_DIR}/otool-L.txt" 2>&1 || true
-otool -l "${XCODE_MAIN}" > "${XCODE_MAIN_DIR}/otool-l.txt" 2>&1 || true
-nm -u "${XCODE_MAIN}" > "${XCODE_MAIN_DIR}/nm-undefined.txt" 2>&1 || true
-codesign -dvvv "${XCODE_MAIN}" > "${XCODE_MAIN_DIR}/codesign.txt" 2>&1 || true
+file "${XCODE_MAIN}" > "${XCODE_MAIN_DIR}/file.txt" 2>&1
+lipo -archs "${XCODE_MAIN}" > "${XCODE_MAIN_DIR}/lipo.txt" 2>&1
+otool -L "${XCODE_MAIN}" > "${XCODE_MAIN_DIR}/otool-dependencies.txt" 2>&1
+otool -l "${XCODE_MAIN}" > "${XCODE_MAIN_DIR}/otool-load-commands.txt" 2>&1
+nm -u "${XCODE_MAIN}" > "${XCODE_MAIN_DIR}/nm-undefined.txt" 2>&1
+codesign -dvvv "${XCODE_MAIN}" > "${XCODE_MAIN_DIR}/codesign.txt" 2>&1
 
 MAIN_ARCHS=$(cat "${XCODE_MAIN_DIR}/lipo.txt")
 echo "Main Executable Architectures: ${MAIN_ARCHS}"
@@ -155,13 +165,13 @@ for root, dirs, files in os.walk(xcode_path):
         # MH_CIGAM_64     = 0xcffaedfe  (b'\xcf\xfa\xed\xfe')
         # FAT_MAGIC       = 0xcafebabe  (b'\xca\xfe\xba\xbe')
         # FAT_CIGAM       = 0xbebafeca  (b'\xbe\xba\xfe\xca')
-        # FAT_MAGIC_64    = 0xcafedabc  (b'\xca\xfe\xda\xbc')
-        # FAT_CIGAM_64    = 0xbcdafeca  (b'\xbc\xda\xfe\xca')
+        # FAT_MAGIC_64    = 0xcafebabf  (b'\xca\xfe\xba\xbf')
+        # FAT_CIGAM_64    = 0xbfbafeca  (b'\xbf\xba\xfe\xca')
         is_macho = magic in (
             b'\xfe\xed\xfa\xce', b'\xce\xfa\xed\xfe',
             b'\xfe\xed\xfa\xcf', b'\xcf\xfa\xed\xfe',
             b'\xca\xfe\xba\xbe', b'\xbe\xba\xfe\xca',
-            b'\xca\xfe\xda\xbc', b'\xbc\xda\xfe\xca'
+            b'\xca\xfe\xba\xbf', b'\xbf\xba\xfe\xca'
         )
 
         if not is_macho:
