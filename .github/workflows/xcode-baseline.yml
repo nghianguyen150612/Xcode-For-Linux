@@ -1,0 +1,58 @@
+name: Xcode 16.4 x86_64 Baseline Inventory
+
+on:
+  workflow_dispatch:
+    inputs:
+      xcode_path:
+        description: 'Target Xcode path'
+        required: false
+        default: '/Applications/Xcode_16.4.app'
+
+jobs:
+  xcode-baseline:
+    name: Inventory Xcode 16.4 x86_64 Baseline
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Verify Architecture (x86_64 Host)
+        run: |
+          ARCH=$(uname -m)
+          echo "Host architecture: ${ARCH}"
+          if [[ "${ARCH}" != "x86_64" ]]; then
+            echo "ERROR: Runner architecture is '${ARCH}', but x86_64 is required!" >&2
+            exit 1
+          fi
+
+      - name: Record Host Environment
+        run: |
+          mkdir -p artifacts/xcode-16.4
+          HOST_FILE="artifacts/xcode-16.4/host.txt"
+          echo "=== Host Environment Information ===" > "${HOST_FILE}"
+          echo "Date: $(date -u)" >> "${HOST_FILE}"
+          echo "uname -a: $(uname -a)" >> "${HOST_FILE}"
+          echo "uname -m: $(uname -m)" >> "${HOST_FILE}"
+          echo "sw_vers:" >> "${HOST_FILE}"
+          sw_vers >> "${HOST_FILE}" 2>&1 || true
+          echo "CPU Brand:" >> "${HOST_FILE}"
+          sysctl -n machdep.cpu.brand_string >> "${HOST_FILE}" 2>&1 || true
+          echo "GitHub Actions Environment:" >> "${HOST_FILE}"
+          echo "RUNNER_OS=${RUNNER_OS:-unknown}" >> "${HOST_FILE}"
+          echo "RUNNER_ARCH=${RUNNER_ARCH:-unknown}" >> "${HOST_FILE}"
+          echo "GITHUB_WORKFLOW=${GITHUB_WORKFLOW:-unknown}" >> "${HOST_FILE}"
+          echo "GITHUB_RUN_ID=${GITHUB_RUN_ID:-unknown}" >> "${HOST_FILE}"
+
+      - name: Run Xcode Inspection Script
+        run: |
+          XCODE_PATH="${{ github.event.inputs.xcode_path || '/Applications/Xcode_16.4.app' }}"
+          ./scripts/inspect-xcode.sh "${XCODE_PATH}" "artifacts/xcode-16.4"
+
+      - name: Upload Baseline Artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: xcode-16.4-baseline-inventory
+          path: artifacts/xcode-16.4/
+          if-no-files-found: error

@@ -1,0 +1,6 @@
+# Artifacts and inspection outputs
+artifacts/
+*.log
+
+# System files
+.DS_Store
