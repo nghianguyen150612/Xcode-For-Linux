@@ -181,7 +181,14 @@ for root, dirs, files in os.walk(xcode_path):
 
         # Get file command output for kind
         try:
-            file_out = subprocess.check_output(["file", "-b", full_path], text=True).strip()
+            raw_file_out = subprocess.check_output(["file", "-b", full_path], text=True).strip()
+            # Universal Mach-O descriptions can span multiple lines. Keep TSV records
+            # one-line and tab-safe while preserving the full observable description.
+            file_out = " | ".join(
+                line.strip().replace("\\t", " ")
+                for line in raw_file_out.splitlines()
+                if line.strip()
+            )
         except Exception:
             file_out = "Mach-O binary"
 
