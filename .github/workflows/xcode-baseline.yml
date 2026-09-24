@@ -7,10 +7,6 @@ on:
         description: 'Target Xcode path'
         required: false
         default: '/Applications/Xcode_16.4.app'
-  push:
-    branches:
-      - main
-
 jobs:
   xcode-baseline:
     name: Inventory Xcode 16.4 x86_64 Baseline
