@@ -34,7 +34,7 @@ else
 fi
 
 if [[ -z "${RESOLVED_XCODE}" || ! -d "${RESOLVED_XCODE}" ]]; then
-    echo "ERROR: Xcode 16.4 could not be located." >&2
+    echo "ERROR: Xcode 16.4 could not be located at '${XCODE_REQ_PATH}' or under /Applications/Xcode*.app" >&2
     exit 1
 fi
 
@@ -148,15 +148,20 @@ for root, dirs, files in os.walk(xcode_path):
         except Exception:
             continue
 
-        # Mach-O magic numbers:
-        # 0xfeedface (32-bit), 0xfeedfacf (64-bit), 0xcafebabe (32-bit fat), 0xbebafeca (fat swap)
-        # 0xcafedabc (64-bit fat), 0xbcdafe0a (64-bit fat swap)
-        # 0xcefaedfe, 0xcffaedfe
+        # Mach-O magic numbers (32-bit, 64-bit, 32-bit fat, 64-bit fat, and byte swaps):
+        # MH_MAGIC        = 0xfeedface  (b'\xfe\xed\xfa\xce')
+        # MH_CIGAM        = 0xcefaedfe  (b'\xce\xfa\xed\xfe')
+        # MH_MAGIC_64     = 0xfeedfacf  (b'\xfe\xed\xfa\xcf')
+        # MH_CIGAM_64     = 0xcffaedfe  (b'\xcf\xfa\xed\xfe')
+        # FAT_MAGIC       = 0xcafebabe  (b'\xca\xfe\xba\xbe')
+        # FAT_CIGAM       = 0xbebafeca  (b'\xbe\xba\xfe\xca')
+        # FAT_MAGIC_64    = 0xcafedabc  (b'\xca\xfe\xda\xbc')
+        # FAT_CIGAM_64    = 0xbcdafeca  (b'\xbc\xda\xfe\xca')
         is_macho = magic in (
             b'\xfe\xed\xfa\xce', b'\xce\xfa\xed\xfe',
             b'\xfe\xed\xfa\xcf', b'\xcf\xfa\xed\xfe',
             b'\xca\xfe\xba\xbe', b'\xbe\xba\xfe\xca',
-            b'\xca\xfe\xda\xbc', b'\xbc\xda\xfe\x0a'
+            b'\xca\xfe\xda\xbc', b'\xbc\xda\xfe\xca'
         )
 
         if not is_macho:
