@@ -1,26 +1,34 @@
 # Project Roadmap
 
-The development and research phases for `Xcode-For-Linux` are structured as follows:
+The development and research phases for `Xcode-For-Linux` are structured as follows.
 
 ## Phase 0: Research & Baselines
-- Establish `x86_64` baseline inventory for Xcode 16.4 on macOS host (Task 001).
-- Analyze Mach-O structure, dependencies (`otool -L`), frameworks, dylibs, XPC services, and CLI entry points.
-- Establish Darling baseline environment on Linux.
+
+- [x] **Task 001:** Establish and validate the Xcode 16.4 `x86_64` baseline inventory on an Intel macOS host.
+- [x] Inventory Mach-O structure, direct dependencies, frameworks, dylibs, XPC/helper bundles, and native CLI entry points.
+- [ ] **Task 002:** Establish a reproducible, pinned Darling baseline environment on x86_64 Linux.
 
 ## Phase 1: Apple Developer CLI Tools Through Compatibility Layer
-- Test basic CLI binaries (`clang`, `swiftc`, `libLTO.dylib`) under Darling.
-- Map missing dynamic libraries, system calls, and framework dependencies.
+
+- [ ] Test basic Apple CLI binaries such as `clang`, `swiftc`, and relevant toolchain libraries under Darling.
+- [ ] Map missing dynamic libraries, system calls, framework APIs, and runtime behavior.
 
 ## Phase 2: `xcodebuild` and Build-System Compatibility
-- Investigate `xcodebuild` dependencies and execution prerequisites.
-- Enable headless command-line project building on Linux.
+
+- [ ] Investigate `xcodebuild` dependencies and execution prerequisites.
+- [ ] Enable headless command-line project building on Linux.
 
 ## Phase 3: Xcode.app Startup and GUI
-- Investigate Cocoa / AppKit / DVT framework compatibility under Darling GUI layer.
-- Execute main `Xcode` executable and address initialization/runtime crashes.
+
+- [ ] Investigate Cocoa/AppKit/DVT framework compatibility under Darling's GUI layer.
+- [ ] Execute the main `Xcode` executable and iteratively address initialization/runtime failures.
 
 ## Phase 4: Physical Apple Device Tooling
-- Support USB / network device communication services (`usbmuxd`, `mobiledevice`).
+
+- [ ] Investigate device discovery, installation, launch, and debugging paths.
+- [ ] Integrate or bridge compatible USB/network device services where appropriate.
 
 ## Phase 5: CoreSimulator / Simulator Runtimes
-- Investigate simulator runtime loading and execution prerequisites on Linux.
+
+- [ ] Map CoreSimulator service/runtime dependencies.
+- [ ] Investigate simulator runtime loading, boot, graphics, app installation, and debugging prerequisites on Linux.
