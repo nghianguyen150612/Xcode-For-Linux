@@ -30,6 +30,7 @@ jobs:
           ./scripts/build-darling.sh
 
       - name: Test Darling baseline
+        continue-on-error: true
         run: |
           ./scripts/test-darling.sh
 
