@@ -8,7 +8,7 @@
 
 - **Phase 0 (Research & Baseline Inventory):** Active.
 - **Task 001:** Complete — Xcode 16.4 `x86_64` baseline validated on a real Intel macOS GitHub Actions runner and documented from inspected artifacts.
-- **Task 002:** Complete — Established reproducible Darling baseline on Linux from pinned commit `60ba801decee7a00782f74f6be4c8ffb013f79ff` with automated build/test workflow and metadata artifacts.
+- **Task 002:** Complete — Established reproducible Darling baseline on Linux from pinned commit `60ba801decee7a00782f74f6be4c8ffb013f79ff` (`BUILD BASELINE: PASS`; `RUNTIME BASELINE: BLOCKED BY GitHub-hosted runner kernel namespace / overlayfs restrictions`).
 - **Task 003:** Next — Introduce Apple developer-tool components one component at a time and attribute compatibility gaps.
 
 ---

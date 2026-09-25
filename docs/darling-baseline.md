@@ -6,13 +6,20 @@ This document records the baseline environment, build procedure, package artifac
 
 ---
 
+## Baseline Summary
+
+- **BUILD BASELINE:** `PASS`
+- **RUNTIME BASELINE:** `BLOCKED BY GitHub-hosted runner kernel namespace / overlayfs restrictions`
+
+---
+
 ## 1. Source
 
 - **Upstream Repository:** `https://github.com/darlinghq/darling.git`
 - **Pinned Commit SHA:** `60ba801decee7a00782f74f6be4c8ffb013f79ff`
 - **Actual Checked-out SHA:** Verified dynamically via `git rev-parse HEAD` against lockfile `third_party/darling.lock`.
 - **Git Branch / State:** Detached HEAD
-- **Submodules:** Recursive submodules initialized via `git submodule sync --recursive && git submodule update --init --recursive`
+- **Submodules:** Recursive submodules initialized via `git submodule sync --recursive && git submodule update --init --recursive` (with `GIT_LFS_SKIP_SMUDGE=1` set to avoid Git LFS auth errors).
 - **Source Tree Modifications:** None (0 modified files, clean upstream tree)
 
 ---
@@ -26,7 +33,7 @@ This document records the baseline environment, build procedure, package artifac
 - **Compiler & Toolchain:**
   - `gcc`: 13.3.0
   - `cmake`: 3.28.3
-  - `git`: 2.53.0
+  - `git`: 2.50+
   - `python3`: 3.12+
 
 ---
@@ -61,8 +68,9 @@ Smoke test suite executed via `scripts/test-darling.sh`:
 
 ### Hosted Runner Runtime Limitations & Exit Policy
 
-- **Build Status:** Target `PASS` via `./tools/debian/make-deb`.
-- **Runtime Error Handling:** If GitHub-hosted runner kernel namespace, overlayfs, or ptrace permissions block `darling shell` execution, `scripts/test-darling.sh` captures host diagnostic details in `artifacts/darling-baseline/smoke-tests.txt` and exits with code `1`.
+- **Build Status:** `PASS` via `./tools/debian/make-deb`.
+- **Runtime Host Limitation:** GitHub-hosted runners run inside restricted unprivileged containers without overlayfs mount privileges or kernel module loading capabilities required by Darling's overlay filesystem/mach driver.
+- **Runtime Error Handling:** When container permissions block `darling shell` execution, `scripts/test-darling.sh` captures host diagnostic details in `artifacts/darling-baseline/smoke-tests.txt` and exits with code `1`.
 - **Artifact Upload:** Workflow uses `if: always()` on `actions/upload-artifact@v4` to ensure diagnostic logs are uploaded without converting test failures into false CI successes.
 
 ---

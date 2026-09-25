@@ -4,6 +4,10 @@ set -euo pipefail
 # Script: build-darling.sh
 # Purpose: Build Darling baseline reproducibly from pinned lockfile in third_party/darling.lock
 
+# Prevent Git LFS from attempting to smudge/download files requiring auth/LFS server
+export GIT_LFS_SKIP_SMUDGE=1
+export DEBIAN_FRONTEND=noninteractive
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 LOCK_FILE="${REPO_ROOT}/third_party/darling.lock"
@@ -103,16 +107,14 @@ fi
 
 {
     echo "=== Updating Apt Repositories ==="
-    ${SUDO_CMD} apt-get update -y || true
+    ${SUDO_CMD} apt-get update -y
 
     echo "=== Installing Build Helpers ==="
     ${SUDO_CMD} apt-get install -y devscripts equivs debhelper
 
     echo "=== Satisfying Build Dependencies from debian/control ==="
     ${SUDO_CMD} mk-build-deps -i -r -t "apt-get --no-install-recommends -y" debian/control
-} > "${ARTIFACTS_DIR}/dependencies.txt" 2>&1 || {
-    echo "Warning or failure during dependency resolution. Check dependencies.txt." >&2
-}
+} | tee "${ARTIFACTS_DIR}/dependencies.txt"
 
 # Execute Build
 BUILD_START_TIME=$(date +%s)
@@ -122,11 +124,7 @@ echo "Building Darling packages using ./tools/debian/make-deb..."
     echo "Build Start Time: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
     ./tools/debian/make-deb
     echo "Build End Time: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
-} > "${ARTIFACTS_DIR}/build.txt" 2>&1 || {
-    BUILD_END_TIME=$(date +%s)
-    echo "Build failed after $((BUILD_END_TIME - BUILD_START_TIME)) seconds. See ${ARTIFACTS_DIR}/build.txt" >&2
-    exit 1
-}
+} 2>&1 | tee "${ARTIFACTS_DIR}/build.txt"
 
 BUILD_END_TIME=$(date +%s)
 BUILD_DURATION=$((BUILD_END_TIME - BUILD_START_TIME))

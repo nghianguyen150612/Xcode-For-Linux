@@ -4,6 +4,8 @@ set -euo pipefail
 # Script: test-darling.sh
 # Purpose: Install built Darling packages, initialize an isolated DPREFIX, and run minimal runtime smoke tests.
 
+export DEBIAN_FRONTEND=noninteractive
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 ARTIFACTS_DIR="${REPO_ROOT}/artifacts/darling-baseline"

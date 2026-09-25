@@ -7,6 +7,8 @@ The development and research phases for `Xcode-For-Linux` are structured as foll
 - [x] **Task 001:** Establish and validate the Xcode 16.4 `x86_64` baseline inventory on an Intel macOS host.
 - [x] Inventory Mach-O structure, direct dependencies, frameworks, dylibs, XPC/helper bundles, and native CLI entry points.
 - [x] **Task 002:** Establish a reproducible, pinned Darling baseline environment on x86_64 Linux.
+  - BUILD BASELINE: PASS
+  - RUNTIME BASELINE: BLOCKED BY GitHub-hosted runner kernel namespace / overlayfs restrictions (documented in `docs/darling-baseline.md`).
 
 ## Phase 1: Apple Developer CLI Tools Through Compatibility Layer
 
