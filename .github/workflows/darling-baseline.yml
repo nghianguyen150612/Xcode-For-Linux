@@ -1,0 +1,77 @@
+name: Darling x86_64 Baseline
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - task-002-darling-baseline
+
+jobs:
+  darling-baseline:
+    name: Build and smoke-test pinned Darling
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+
+    env:
+      DARLING_BUILD_JOBS: 4
+
+    steps:
+      - name: Checkout Xcode-For-Linux
+        uses: actions/checkout@v4
+
+      - name: Verify Linux x86_64 host
+        run: |
+          set -euo pipefail
+          test "$(uname -s)" = "Linux"
+          test "$(uname -m)" = "x86_64"
+          uname -a
+
+      - name: Free runner disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          df -h /
+
+      - name: Install bootstrap dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends             git git-lfs cmake clang make devscripts equivs debhelper ca-certificates
+
+      - name: Prepare pinned Darling source
+        run: |
+          ./scripts/prepare-darling.sh "$GITHUB_WORKSPACE"
+
+      - name: Install Darling build dependencies
+        run: |
+          cd "$GITHUB_WORKSPACE/.task002/darling-src"
+          sudo mk-build-deps -i -r -t "apt-get --no-install-recommends -y" debian/control
+
+      - name: Build and install minimal Darling system
+        run: |
+          ./scripts/build-darling.sh "$GITHUB_WORKSPACE"
+
+      - name: Smoke-test Darling runtime
+        run: |
+          ./scripts/smoke-darling.sh "$GITHUB_WORKSPACE"
+
+      - name: Record disk usage
+        if: always()
+        run: |
+          {
+            echo "df:"
+            df -h /
+            echo
+            echo "source_size:"
+            du -sh .task002/darling-src 2>/dev/null || true
+            echo "build_size:"
+            du -sh .task002/darling-build 2>/dev/null || true
+            echo "prefix_size:"
+            du -sh .task002/darling-prefix 2>/dev/null || true
+          } > artifacts/darling-baseline/disk-usage.txt
+
+      - name: Upload Darling baseline metadata
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: darling-baseline
+          path: artifacts/darling-baseline/
+          if-no-files-found: error
