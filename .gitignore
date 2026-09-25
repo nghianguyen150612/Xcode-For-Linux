@@ -1,6 +1,15 @@
-# Artifacts and inspection outputs
+# Build and runtime outputs
 artifacts/
+build/
+darling/
+darling-prefix/
 *.log
+*.deb
+*.buildinfo
+*.changes
+*.dsc
+*.tar.gz
+*.tar.xz
 
 # System files
 .DS_Store
