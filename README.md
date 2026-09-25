@@ -8,7 +8,8 @@
 
 - **Phase 0 (Research & Baseline Inventory):** Active.
 - **Task 001:** Complete — Xcode 16.4 `x86_64` baseline validated on a real Intel macOS GitHub Actions runner and documented from inspected artifacts.
-- **Task 002:** Next — establish a reproducible Darling baseline on Linux from a pinned upstream commit before any Xcode-specific compatibility patches.
+- **Task 002:** Complete — Established reproducible Darling baseline on Linux from pinned commit `60ba801decee7a00782f74f6be4c8ffb013f79ff` with automated build/test workflow and metadata artifacts.
+- **Task 003:** Next — Introduce Apple developer-tool components one component at a time and attribute compatibility gaps.
 
 ---
 
@@ -26,3 +27,4 @@ For more details on the planned compatibility architecture and research mileston
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - [docs/ROADMAP.md](docs/ROADMAP.md)
 - [docs/xcode-16.4-baseline.md](docs/xcode-16.4-baseline.md)
+- [docs/darling-baseline.md](docs/darling-baseline.md)

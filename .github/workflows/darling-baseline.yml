@@ -1,0 +1,42 @@
+name: Darling Linux Baseline
+
+on:
+  push:
+    branches: [ main, task-002-darling-baseline ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    name: Build & Test Darling Baseline
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify host architecture is x86_64
+        run: |
+          ARCH=$(uname -m)
+          echo "Host architecture: ${ARCH}"
+          if [ "${ARCH}" != "x86_64" ]; then
+            echo "Error: Host architecture is ${ARCH}, expected x86_64" >&2
+            exit 1
+          fi
+
+      - name: Build Darling baseline
+        run: |
+          ./scripts/build-darling.sh
+
+      - name: Test Darling baseline
+        run: |
+          ./scripts/test-darling.sh
+
+      - name: Upload diagnostic metadata artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: darling-baseline-artifacts
+          path: artifacts/darling-baseline/
+          if-no-files-found: warn
